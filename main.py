@@ -12,12 +12,17 @@ from controller.alert import get_alert, insert_alert
 from controller.campagin import get_campaign
 from controller.heatmap import get_heatmap, insert_heatmap
 from controller.JWTmanager import JWTmanager, JWTSettings
+from controller.learning_modules import (get_learning_module_blogs,
+                                         get_learning_module_videos,
+                                         insert_learning_module_blogs,
+                                         insert_learning_module_videos)
 from controller.notification import get_notification, insert_notification
 from controller.priority import get_priority, insert_priority
 from models.achivement import Achivement
 from models.alert import Alert
 from models.campagin import Campaign
 from models.heatmap import HeatMap
+from models.learning_modules import LearningModsBlogs, LearningModsVideos
 from models.notification import Notification
 from models.response import AuthResp
 from models.users import Login, Signup
@@ -35,6 +40,8 @@ class Mymongo(FastAPI):
     collection_heatmap: Collection[Mapping[str, Any]]
     collection_notification: Collection[Mapping[str, Any]]
     collection_campagin: Collection[Mapping[str, Any]]
+    collection_learning_mod_blog: Collection[Mapping[str, Any]]
+    collection_learning_mod_video: Collection[Mapping[str, Any]]
 
 
 logging.basicConfig(level=logging.INFO)
@@ -68,6 +75,12 @@ async def startup_client():
     app.collection_heatmap = app.mongodb_client["jalaarogya"]["heatmap"]
     app.collection_notification = app.mongodb_client["jalaarogya"]["notification"]
     app.collection_campagin = app.mongodb_client["jalaarogya"]["campagin"]
+    app.collection_learning_mod_blog = app.mongodb_client["jalaarogya"][
+        "learn_mod_blog"
+    ]
+    app.collection_learning_mod_video = app.mongodb_client["jalaarogya"][
+        "learn_mod_video"
+    ]
 
 
 @app.post("/login/{role}")
@@ -226,6 +239,30 @@ async def campagin_show(data: Campaign):
 async def campagin_add(data: Campaign):
     resp = insert_notification(data, app.collection_campagin)
     return AuthResp(success=resp)
+
+
+@app.get("/learn_mods/blog")
+async def learnmods_show():
+    resp = get_learning_module_blogs(app.collection_learning_mod_blog)
+    return resp
+
+
+@app.get("/learn_mods/blog/add")
+async def learnmods_add(data: LearningModsBlogs):
+    resp = insert_learning_module_blogs(data, app.collection_learning_mod_blog)
+    return resp
+
+
+@app.get("/learn_mods/video")
+async def learnmodv_show():
+    resp = get_learning_module_videos(app.collection_learning_mod_video)
+    return resp
+
+
+@app.get("/learn_mods/video/add")
+async def learnmodv_add(data: LearningModsVideos):
+    resp = insert_learning_module_videos(data, app.collection_learning_mod_video)
+    return resp
 
 
 if __name__ == "__main__":
