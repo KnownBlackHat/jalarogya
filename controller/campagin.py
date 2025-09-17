@@ -1,6 +1,6 @@
 from pymongo.collection import Collection
 
-from models.campaign import Campaign
+from models.campagin import Campaign
 
 
 def insert_campaign(data: Campaign, collection: Collection) -> bool:
