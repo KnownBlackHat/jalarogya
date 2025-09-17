@@ -16,10 +16,12 @@ class Mymongo(FastAPI):
     collection_resident: Collection[Mapping[str, Any]]
     collection_asha: Collection[Mapping[str, Any]]
     collection_bmo: Collection[Mapping[str, Any]]
+    collection_govt: Collection[Mapping[str, Any]]
 
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 app = Mymongo()
 app.add_middleware(
@@ -29,6 +31,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+COLLECTION_MAP = {
+    "asha": app.collection_asha,
+    "resident": app.collection_resident,
+    "bmo": app.collection_bmo,
+    "govt": app.collection_govt,
+}
 
 DB_URL = "mongodb+srv://test:test@cluster0.yvlq9mj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 jwt_manager = JWTmanager(JWTSettings())
@@ -40,23 +49,20 @@ async def startup_client():
     app.collection_asha = app.mongodb_client["jalaarogya"]["asha"]
     app.collection_bmo = app.mongodb_client["jalaarogya"]["bmo"]
     app.collection_resident = app.mongodb_client["jalaarogya"]["resident"]
+    app.collection_govt = app.mongodb_client["jalaarogya"]["govt"]
 
 
 @app.post("/login/{role}")
-async def login_endpoint(role: Literal["asha", "resident", "bmo"], details: Login):
+async def login_endpoint(
+    role: Literal["asha", "resident", "bmo", "govt"], details: Login
+):
     from controller.auth import login
     from models.response import TokenPayload
 
-    if role not in ["asha", "resident", "bmo"]:
+    if role not in ["asha", "resident", "bmo", "govt"]:
         return {"success": False, "error": "Invalid Role"}
 
-    collection_map = {
-        "asha": app.collection_asha,
-        "resident": app.collection_resident,
-        "bmo": app.collection_bmo,
-    }
-
-    user = login(details.email, details.password, collection_map[role], role)
+    user = login(details.email, details.password, COLLECTION_MAP[role], role)
     if not user:
         return {"success": False, "error": "Invalid Credentials"}
 
@@ -65,27 +71,24 @@ async def login_endpoint(role: Literal["asha", "resident", "bmo"], details: Logi
 
 
 @app.post("/register/{role}")
-async def register_endpoint(role: Literal["asha", "resident", "bmo"], details: Signup):
+async def register_endpoint(
+    role: Literal["asha", "resident", "bmo", "govt"], details: Signup
+):
     from controller.auth import register
     from models.response import TokenPayload
 
-    if role not in ["asha", "resident", "bmo"]:
+    if role not in ["asha", "resident", "bmo", "govt"]:
         return {"success": False, "error": "Invalid Role"}
-
-    collection_map = {
-        "asha": app.collection_asha,
-        "resident": app.collection_resident,
-        "bmo": app.collection_bmo,
-    }
 
     user = register(
         details.name,
         details.email,
         details.password,
         details.emp_id,
-        collection_map[role],
+        COLLECTION_MAP[role],
         role,
     )
+
     if not user:
         return {"success": False, "error": "User Already Exists"}
 

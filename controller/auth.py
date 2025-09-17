@@ -7,7 +7,7 @@ def login(
     email: str,
     password: str,
     collection: Collection,
-    role: Literal["asha", "resident", "bmo"],
+    role: Literal["asha", "resident", "bmo", "govt"],
 ):
     if usr := collection.find_one({"email": email, "password": password}):
         match role:
@@ -37,6 +37,14 @@ def login(
                     email=usr.get("email", ""),
                     password=usr.get("password", ""),
                 )
+            case "govt":
+                from models.users import Govt
+
+                return Govt(
+                    name=usr.get("name", ""),
+                    email=usr.get("email", ""),
+                    password=usr.get("password", ""),
+                )
 
     return False
 
@@ -47,7 +55,7 @@ def register(
     password: str,
     emp_id: Optional[int],
     collection: Collection,
-    role: Literal["asha", "resident", "bmo"],
+    role: Literal["asha", "resident", "bmo", "govt"],
 ):
     if collection.find_one({"email": email}):
         return False
@@ -72,6 +80,14 @@ def register(
             from models.users import User
 
             user = User(
+                name=name,
+                email=email,
+                password=password,
+            )
+        case "govt":
+            from models.users import Govt
+
+            user = Govt(
                 name=name,
                 email=email,
                 password=password,
