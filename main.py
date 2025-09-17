@@ -9,12 +9,14 @@ from pymongo.collection import Collection, Mapping
 
 from controller.achivement import get_achivement, insert_achivement
 from controller.alert import get_alert, insert_alert
+from controller.campagin import get_campaign
 from controller.heatmap import get_heatmap, insert_heatmap
 from controller.JWTmanager import JWTmanager, JWTSettings
 from controller.notification import get_notification, insert_notification
 from controller.priority import get_priority, insert_priority
 from models.achivement import Achivement
 from models.alert import Alert
+from models.campagin import Campaign
 from models.heatmap import HeatMap
 from models.notification import Notification
 from models.response import AuthResp
@@ -32,6 +34,7 @@ class Mymongo(FastAPI):
     collection_queue: Collection[Mapping[str, Any]]
     collection_heatmap: Collection[Mapping[str, Any]]
     collection_notification: Collection[Mapping[str, Any]]
+    collection_campagin: Collection[Mapping[str, Any]]
 
 
 logging.basicConfig(level=logging.INFO)
@@ -64,6 +67,7 @@ async def startup_client():
     app.collection_queue = app.mongodb_client["jalaarogya"]["queue"]
     app.collection_heatmap = app.mongodb_client["jalaarogya"]["heatmap"]
     app.collection_notification = app.mongodb_client["jalaarogya"]["notification"]
+    app.collection_campagin = app.mongodb_client["jalaarogya"]["campagin"]
 
 
 @app.post("/login/{role}")
@@ -209,6 +213,18 @@ async def notification_show():
 @app.post("/notification/add")
 async def notification_add(data: Notification):
     resp = insert_notification(data, app.collection_notification)
+    return AuthResp(success=resp)
+
+
+@app.get("/campagin")
+async def campagin_show(data: Campaign):
+    resp = get_campaign(app.collection_notification)
+    return resp
+
+
+@app.post("/campagin/add")
+async def campagin_add(data: Campaign):
+    resp = insert_notification(data, app.collection_campagin)
     return AuthResp(success=resp)
 
 
