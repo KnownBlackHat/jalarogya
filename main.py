@@ -79,7 +79,12 @@ async def register_endpoint(role: Literal["asha", "resident", "bmo"], details: S
     }
 
     user = register(
-        details.name, details.email, details.password, collection_map[role], role
+        details.name,
+        details.email,
+        details.password,
+        details.emp_id,
+        collection_map[role],
+        role,
     )
     if not user:
         return {"success": False, "error": "User Already Exists"}
