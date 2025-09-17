@@ -119,7 +119,10 @@ async def verify(request: Request, call_next):
 
     try:
         payload = jwt_manager.verify(token)
-        request.state.user = payload
+        print("payload: ", payload.error)
+        if not payload.success:
+            raise Exception("Invalid Token")
+        request.state.user = payload.token
     except Exception as e:
         logger.error(f"Token verification failed: {e}")
         return JSONResponse(
@@ -129,7 +132,7 @@ async def verify(request: Request, call_next):
     return await call_next(request)
 
 
-@app.get("/protected-route")
+@app.get("/broadcast_alert")
 async def protected_route(request: Request):
     user = request.state.user
     return {

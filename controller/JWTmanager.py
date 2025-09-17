@@ -18,8 +18,8 @@ class JWTmanager:
 
     def verify(self, token: str) -> AuthResp:
         try:
-            jwt.decode(token, self.settings.secret_key, algorithm="HS256")
-            return AuthResp(success=True)
+            jwt.decode(token, self.settings.secret_key, algorithms=["HS256"])
+            return AuthResp(success=True, token=token)
         except jwt.ExpiredSignatureError:
             return AuthResp(success=False, error="Token Expired")
         except jwt.InvalidTokenError:
@@ -30,3 +30,13 @@ class JWTmanager:
             payload.__dict__, self.settings.secret_key, algorithm="HS256"
         )
         return AuthResp(success=True, token=token)
+
+
+if __name__ == "__main__":
+    jwt_manager = JWTmanager(JWTSettings())
+    r = jwt_manager.encode(
+        TokenPayload(name="test", role="asha", email="test@gmail.com")
+    )
+    print(r.token)
+
+    print(jwt_manager.verify(r.token or ""))
