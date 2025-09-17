@@ -9,10 +9,12 @@ from pymongo.collection import Collection, Mapping
 
 from controller.achivement import get_achivement, insert_achivement
 from controller.alert import get_alert, insert_alert
+from controller.heatmap import get_heatmap, insert_heatmap
 from controller.JWTmanager import JWTmanager, JWTSettings
 from controller.priority import get_priority, insert_priority
 from models.achivement import Achivement
 from models.alert import Alert
+from models.heatmap import HeatMap
 from models.response import AuthResp
 from models.users import Login, Signup
 
@@ -26,6 +28,7 @@ class Mymongo(FastAPI):
     collection_alert: Collection[Mapping[str, Any]]
     collection_achivement: Collection[Mapping[str, Any]]
     collection_queue: Collection[Mapping[str, Any]]
+    collection_heatmap: Collection[Mapping[str, Any]]
 
 
 logging.basicConfig(level=logging.INFO)
@@ -56,6 +59,7 @@ async def startup_client():
     app.collection_alert = app.mongodb_client["jalaarogya"]["alert"]
     app.collection_achivement = app.mongodb_client["jalaarogya"]["alert"]
     app.collection_queue = app.mongodb_client["jalaarogya"]["queue"]
+    app.collection_heatmap = app.mongodb_client["jalaarogya"]["heatmap"]
 
 
 @app.post("/login/{role}")
@@ -177,6 +181,18 @@ async def priority_show():
 @app.post("/priority_queue/add")
 async def priority_add(city):
     resp = insert_priority(city, app.collection_queue)
+    return AuthResp(success=resp)
+
+
+@app.get("/heatmap")
+async def heatmap_show():
+    resp = get_heatmap(app.collection_queue)
+    return resp
+
+
+@app.post("/heatmap/add")
+async def heatmap_add(data: HeatMap):
+    resp = insert_heatmap(data, app.collection_heatmap)
     return AuthResp(success=resp)
 
 
