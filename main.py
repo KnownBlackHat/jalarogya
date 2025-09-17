@@ -11,10 +11,12 @@ from controller.achivement import get_achivement, insert_achivement
 from controller.alert import get_alert, insert_alert
 from controller.heatmap import get_heatmap, insert_heatmap
 from controller.JWTmanager import JWTmanager, JWTSettings
+from controller.notification import get_notification, insert_notification
 from controller.priority import get_priority, insert_priority
 from models.achivement import Achivement
 from models.alert import Alert
 from models.heatmap import HeatMap
+from models.notification import Notification
 from models.response import AuthResp
 from models.users import Login, Signup
 
@@ -29,6 +31,7 @@ class Mymongo(FastAPI):
     collection_achivement: Collection[Mapping[str, Any]]
     collection_queue: Collection[Mapping[str, Any]]
     collection_heatmap: Collection[Mapping[str, Any]]
+    collection_notification: Collection[Mapping[str, Any]]
 
 
 logging.basicConfig(level=logging.INFO)
@@ -60,6 +63,7 @@ async def startup_client():
     app.collection_achivement = app.mongodb_client["jalaarogya"]["alert"]
     app.collection_queue = app.mongodb_client["jalaarogya"]["queue"]
     app.collection_heatmap = app.mongodb_client["jalaarogya"]["heatmap"]
+    app.collection_notification = app.mongodb_client["jalaarogya"]["notification"]
 
 
 @app.post("/login/{role}")
@@ -193,6 +197,18 @@ async def heatmap_show():
 @app.post("/heatmap/add")
 async def heatmap_add(data: HeatMap):
     resp = insert_heatmap(data, app.collection_heatmap)
+    return AuthResp(success=resp)
+
+
+@app.get("/notification")
+async def notification_show():
+    resp = get_notification(app.collection_notification)
+    return resp
+
+
+@app.post("/notification/add")
+async def notification_add(data: Notification):
+    resp = insert_notification(data, app.collection_notification)
     return AuthResp(success=resp)
 
 
