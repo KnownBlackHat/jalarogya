@@ -10,6 +10,7 @@ from pymongo.collection import Collection, Mapping
 from controller.achivement import get_achivement, insert_achivement
 from controller.alert import get_alert, insert_alert
 from controller.JWTmanager import JWTmanager, JWTSettings
+from controller.priority import get_priority, insert_priority
 from models.achivement import Achivement
 from models.alert import Alert
 from models.response import AuthResp
@@ -24,6 +25,7 @@ class Mymongo(FastAPI):
     collection_govt: Collection[Mapping[str, Any]]
     collection_alert: Collection[Mapping[str, Any]]
     collection_achivement: Collection[Mapping[str, Any]]
+    collection_queue: Collection[Mapping[str, Any]]
 
 
 logging.basicConfig(level=logging.INFO)
@@ -53,6 +55,7 @@ async def startup_client():
     app.collection_govt = app.mongodb_client["jalaarogya"]["govt"]
     app.collection_alert = app.mongodb_client["jalaarogya"]["alert"]
     app.collection_achivement = app.mongodb_client["jalaarogya"]["alert"]
+    app.collection_queue = app.mongodb_client["jalaarogya"]["queue"]
 
 
 @app.post("/login/{role}")
@@ -143,26 +146,38 @@ async def verify(request: Request, call_next):
 
 @app.post("/alert/add")
 async def alert(alert: Alert):
-    insert_alert(alert.message, app.collection_alert)
-    return AuthResp(success=True)
+    resp = insert_alert(alert.message, app.collection_alert)
+    return AuthResp(success=resp)
 
 
-@app.post("/alert")
+@app.get("/alert")
 async def alert_show():
     alerts = get_alert(app.collection_alert)
     return alerts
 
 
-@app.post("/achivement")
+@app.get("/achivement")
 async def achivement_show():
-    alerts = get_achivement(app.collection_alert)
+    alerts = get_achivement(app.collection_achivement)
     return alerts
 
 
 @app.post("/achivement/add")
 async def achivement_add(achivement: Achivement):
-    alerts = insert_achivement(achivement, app.collection_alert)
-    return alerts
+    resp = insert_achivement(achivement, app.collection_achivement)
+    return AuthResp(success=resp)
+
+
+@app.get("/priority_queue")
+async def priority_show():
+    priority = get_priority(app.collection_queue)
+    return priority
+
+
+@app.post("/priority_queue/add")
+async def priority_add(city):
+    resp = insert_priority(city, app.collection_queue)
+    return AuthResp(success=resp)
 
 
 if __name__ == "__main__":
