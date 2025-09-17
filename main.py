@@ -8,6 +8,9 @@ from pymongo import MongoClient
 from pymongo.collection import Collection, Mapping
 
 from controller.JWTmanager import JWTmanager, JWTSettings
+from controller.misc import get_alert, insert_alert
+from models.misc import Alert
+from models.response import AuthResp
 from models.users import Login, Signup
 
 
@@ -17,6 +20,7 @@ class Mymongo(FastAPI):
     collection_asha: Collection[Mapping[str, Any]]
     collection_bmo: Collection[Mapping[str, Any]]
     collection_govt: Collection[Mapping[str, Any]]
+    collection_alert: Collection[Mapping[str, Any]]
 
 
 logging.basicConfig(level=logging.INFO)
@@ -44,6 +48,7 @@ async def startup_client():
     app.collection_bmo = app.mongodb_client["jalaarogya"]["bmo"]
     app.collection_resident = app.mongodb_client["jalaarogya"]["resident"]
     app.collection_govt = app.mongodb_client["jalaarogya"]["govt"]
+    app.collection_alert = app.mongodb_client["jalaarogya"]["alert"]
 
 
 @app.post("/login/{role}")
@@ -132,13 +137,16 @@ async def verify(request: Request, call_next):
     return await call_next(request)
 
 
-@app.get("/broadcast_alert")
-async def protected_route(request: Request):
-    user = request.state.user
-    return {
-        "success": True,
-        "message": f"Hello, {user}. You have accessed a protected route!",
-    }
+@app.post("/alert/add")
+async def alert(alert: Alert):
+    insert_alert(alert.message, app.collection_alert)
+    return AuthResp(success=True)
+
+
+@app.post("/alert")
+async def alert_show():
+    alerts = get_alert(app.collection_alert)
+    return alerts
 
 
 if __name__ == "__main__":
