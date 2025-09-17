@@ -32,12 +32,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-COLLECTION_MAP = {
-    "asha": app.collection_asha,
-    "resident": app.collection_resident,
-    "bmo": app.collection_bmo,
-    "govt": app.collection_govt,
-}
 
 DB_URL = "mongodb+srv://test:test@cluster0.yvlq9mj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 jwt_manager = JWTmanager(JWTSettings())
@@ -62,7 +56,14 @@ async def login_endpoint(
     if role not in ["asha", "resident", "bmo", "govt"]:
         return {"success": False, "error": "Invalid Role"}
 
-    user = login(details.email, details.password, COLLECTION_MAP[role], role)
+    collection_map = {
+        "asha": app.collection_asha,
+        "resident": app.collection_resident,
+        "bmo": app.collection_bmo,
+        "govt": app.collection_govt,
+    }
+
+    user = login(details.email, details.password, collection_map[role], role)
     if not user:
         return {"success": False, "error": "Invalid Credentials"}
 
@@ -80,12 +81,19 @@ async def register_endpoint(
     if role not in ["asha", "resident", "bmo", "govt"]:
         return {"success": False, "error": "Invalid Role"}
 
+    collection_map = {
+        "asha": app.collection_asha,
+        "resident": app.collection_resident,
+        "bmo": app.collection_bmo,
+        "govt": app.collection_govt,
+    }
+
     user = register(
         details.name,
         details.email,
         details.password,
         details.emp_id,
-        COLLECTION_MAP[role],
+        collection_map[role],
         role,
     )
 
