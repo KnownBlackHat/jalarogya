@@ -7,9 +7,11 @@ from fastapi.responses import JSONResponse
 from pymongo import MongoClient
 from pymongo.collection import Collection, Mapping
 
+from controller.achivement import get_achivement, insert_achivement
+from controller.alert import get_alert, insert_alert
 from controller.JWTmanager import JWTmanager, JWTSettings
-from controller.misc import get_alert, insert_alert
-from models.misc import Alert
+from models.achivement import Achivement
+from models.alert import Alert
 from models.response import AuthResp
 from models.users import Login, Signup
 
@@ -21,6 +23,7 @@ class Mymongo(FastAPI):
     collection_bmo: Collection[Mapping[str, Any]]
     collection_govt: Collection[Mapping[str, Any]]
     collection_alert: Collection[Mapping[str, Any]]
+    collection_achivement: Collection[Mapping[str, Any]]
 
 
 logging.basicConfig(level=logging.INFO)
@@ -49,6 +52,7 @@ async def startup_client():
     app.collection_resident = app.mongodb_client["jalaarogya"]["resident"]
     app.collection_govt = app.mongodb_client["jalaarogya"]["govt"]
     app.collection_alert = app.mongodb_client["jalaarogya"]["alert"]
+    app.collection_achivement = app.mongodb_client["jalaarogya"]["alert"]
 
 
 @app.post("/login/{role}")
@@ -146,6 +150,18 @@ async def alert(alert: Alert):
 @app.post("/alert")
 async def alert_show():
     alerts = get_alert(app.collection_alert)
+    return alerts
+
+
+@app.post("/achivement")
+async def achivement_show():
+    alerts = get_achivement(app.collection_alert)
+    return alerts
+
+
+@app.post("/achivement/add")
+async def achivement_add(achivement: Achivement):
+    alerts = insert_achivement(achivement, app.collection_alert)
     return alerts
 
 
