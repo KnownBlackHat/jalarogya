@@ -4,12 +4,10 @@ from models.priority import Priority
 
 
 def insert_priority(city: str, collection: Collection):
-    result = collection.find_one_and_update(
-        {"city": city}, {"$inc": {"count": 1}}, upsert=True
-    )
-    return result.acknowledged
+    collection.find_one_and_update({"city": city}, {"$inc": {"count": 1}}, upsert=True)
+    return True
 
 
-def get_priority(collection: Collection) -> list[dict]:
+def get_priority(collection: Collection) -> list[Priority]:
     priorities = collection.find().sort("count", -1)
-    return [Priority(**doc).dict() for doc in list(priorities)]
+    return [Priority(**doc) for doc in list(priorities)]
