@@ -283,7 +283,7 @@ async def learnmods_show():
     return resp
 
 
-@app.get("/learn_mods/blog/add")
+@app.post("/learn_mods/blog/add")
 async def learnmods_add(data: LearningModsBlogs):
     resp = insert_learning_module_blogs(data, app.collection_learning_mod_blog)
     debug_log(inp=data, out=AuthResp(success=resp))
@@ -297,7 +297,7 @@ async def learnmodv_show():
     return resp
 
 
-@app.get("/learn_mods/video/add")
+@app.post("/learn_mods/video/add")
 async def learnmodv_add(data: LearningModsVideos):
     resp = insert_learning_module_videos(data, app.collection_learning_mod_video)
     debug_log(inp=data, out=AuthResp(success=resp))
