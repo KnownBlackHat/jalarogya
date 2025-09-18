@@ -9,6 +9,6 @@ def insert_achivement(achivement: Achivement, collection: Collection) -> bool:
     return result.acknowledged
 
 
-def get_achivement(collection: Collection, limit: int = 10) -> list[dict]:
+def get_achivement(collection: Collection, limit: int = 10) -> list[Achivement]:
     achivements = collection.find().sort("_id", -1).limit(limit)
-    return list(achivements)
+    return [Achivement(**doc) for doc in list(achivements)]

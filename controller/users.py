@@ -11,16 +11,16 @@ def get_user(
     match role:
         case "asha":
             bmos = collection.find()
-            return [AshaWorker(**asha) for asha in bmos]
+            return [AshaWorker(**asha) for asha in list(bmos)]
         case "resident":
             resident = collection.find()
-            return [User(**usr) for usr in resident]
+            return [User(**usr) for usr in list(resident)]
         case "bmo":
             bmos = collection.find()
-            return [Bmo(**bmo) for bmo in bmos]
+            return [Bmo(**bmo) for bmo in list(bmos)]
         case "govt":
             govts = collection.find()
-            return [Govt(**govt) for govt in govts]
+            return [Govt(**govt) for govt in list(govts)]
 
 
 def update_user(

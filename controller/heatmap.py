@@ -21,4 +21,4 @@ def insert_heatmap(data: HeatMap, collection: Collection) -> bool:
 
 def get_heatmap(collection: Collection) -> list[HeatMap]:
     heatmaps = collection.find().sort("severity", -1)
-    return list(heatmaps)
+    return [HeatMap(**doc) for doc in list(heatmaps)]

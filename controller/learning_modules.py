@@ -14,7 +14,7 @@ def insert_learning_module_blogs(
 
 def get_learning_module_blogs(collection: Collection) -> List[LearningModsBlogs]:
     blogs = collection.find()
-    return list(blogs)
+    return [LearningModsBlogs(**doc) for doc in list(blogs)]
 
 
 def insert_learning_module_videos(
@@ -26,4 +26,4 @@ def insert_learning_module_videos(
 
 def get_learning_module_videos(collection: Collection) -> List[LearningModsVideos]:
     videos = collection.find()
-    return list(videos)
+    return [LearningModsVideos(**doc) for doc in list(videos)]

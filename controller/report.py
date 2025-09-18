@@ -10,4 +10,4 @@ def insert_report(data: Report, collection: Collection) -> bool:
 
 def get_reports(collection: Collection) -> list[Report]:
     reports = collection.find().sort("_id", -1)
-    return list(reports)
+    return [Report(**doc) for doc in list(reports)]

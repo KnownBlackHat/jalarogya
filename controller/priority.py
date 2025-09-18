@@ -1,5 +1,7 @@
 from pymongo.collection import Collection
 
+from models.priority import Priority
+
 
 def insert_priority(city: str, collection: Collection):
     result = collection.find_one_and_update(
@@ -10,4 +12,4 @@ def insert_priority(city: str, collection: Collection):
 
 def get_priority(collection: Collection) -> list[dict]:
     priorities = collection.find().sort("count", -1)
-    return list(priorities)
+    return [Priority(**doc).dict() for doc in list(priorities)]

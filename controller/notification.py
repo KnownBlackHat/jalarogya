@@ -10,4 +10,4 @@ def insert_notification(data: Notification, collection: Collection) -> bool:
 
 def get_notification(collection: Collection) -> list[Notification]:
     notifications = collection.find()
-    return list(notifications)
+    return [Notification(**doc) for doc in list(notifications)]

@@ -10,4 +10,4 @@ def insert_campaign(data: Campaign, collection: Collection) -> bool:
 
 def get_campaign(collection: Collection) -> list[Campaign]:
     campaigns = collection.find()
-    return list(campaigns)
+    return [Campaign(**doc) for doc in list(campaigns)]
