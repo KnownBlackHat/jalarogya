@@ -320,11 +320,14 @@ async def update_user(
 async def ai_judge(data: AiJudgeInput) -> AiJudgeOut:
     from controller.ai_judge import get_prediction
 
-    result = get_prediction(data)
-    return AiJudgeOut(
-        severity=int(result.split("\n")[0].split(": ")[1]),
-        diseases=result.split("\n")[1].split(": ")[1],
-    )
+    try:
+        result = get_prediction(data)
+        return AiJudgeOut(
+            severity=int(result.split("\n")[0].split(": ")[1]),
+            diseases=result.split("\n")[1].split(": ")[1],
+        )
+    except Exception:
+        return await ai_judge(data=data)
 
 
 if __name__ == "__main__":
