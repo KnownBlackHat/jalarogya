@@ -14,10 +14,12 @@ from controller.alert import get_alert, insert_alert
 from controller.campagin import get_campaign, insert_campaign
 from controller.heatmap import get_heatmap, insert_heatmap
 from controller.JWTmanager import JWTmanager, JWTSettings
-from controller.learning_modules import (get_learning_module_blogs,
-                                         get_learning_module_videos,
-                                         insert_learning_module_blogs,
-                                         insert_learning_module_videos)
+from controller.learning_modules import (
+    get_learning_module_blogs,
+    get_learning_module_videos,
+    insert_learning_module_blogs,
+    insert_learning_module_videos,
+)
 from controller.location import fetch_location
 from controller.notification import get_notification, insert_notification
 from controller.priority import get_priority, insert_priority
@@ -28,7 +30,9 @@ from models.alert import Alert
 from models.campagin import Campaign
 from models.heatmap import HeatMap
 from models.learning_modules import LearningModsBlogs, LearningModsVideos
+from models.news import News
 from models.notification import Notification
+from models.report import Report
 from models.response import AuthResp
 from models.users import AshaWorker, Bmo, Govt, Login, Signup, User
 
@@ -82,8 +86,8 @@ async def startup_client():
     app.collection_heatmap = app.mongodb_client["jalaarogya"]["heatmap"]
     app.collection_notification = app.mongodb_client["jalaarogya"]["notification"]
     app.collection_campagin = app.mongodb_client["jalaarogya"]["campagin"]
-    app.collection_news = app.mongodb_client["jalaarogya"]["campagin"]
-    app.collection_report = app.mongodb_client["jalaarogya"]["campagin"]
+    app.collection_news = app.mongodb_client["jalaarogya"]["news"]
+    app.collection_report = app.mongodb_client["jalaarogya"]["report"]
     app.collection_learning_mod_blog = app.mongodb_client["jalaarogya"][
         "learn_mod_blog"
     ]
@@ -150,34 +154,34 @@ async def register_endpoint(
     return jwt_manager.encode(payload)
 
 
-@app.middleware("http")
-async def verify(request: Request, call_next):
-    if request.url.path.startswith(("/login", "/register", "/docs", "/openapi.json")):
-        return await call_next(request)
+# @app.middleware("http")
+# async def verify(request: Request, call_next):
+#     if request.url.path.startswith(("/login", "/register", "/docs", "/openapi.json")):
+#         return await call_next(request)
 
-    auth_header = request.headers.get("Authorization")
-    if not auth_header or not auth_header.startswith("Bearer "):
-        return JSONResponse(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            content={"success": False, "error": "Authorization header missing"},
-        )
-    token: str = auth_header.split(" ")[1]
+#     auth_header = request.headers.get("Authorization")
+#     if not auth_header or not auth_header.startswith("Bearer "):
+#         return JSONResponse(
+#             status_code=status.HTTP_401_UNAUTHORIZED,
+#             content={"success": False, "error": "Authorization header missing"},
+#         )
+#     token: str = auth_header.split(" ")[1]
 
-    if token == "shreyaaa":
-        return await call_next(request)
+#     if token == "shreyaaa":
+#         return await call_next(request)
 
-    try:
-        payload = jwt_manager.verify(token)
-        if not payload.success:
-            raise Exception("Invalid Token")
-        request.state.user = payload.token
-    except Exception as e:
-        logger.error(f"Token verification failed: {e}")
-        return JSONResponse(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            content={"success": False, "error": "Invalid or expired token"},
-        )
-    return await call_next(request)
+#     try:
+#         payload = jwt_manager.verify(token)
+#         if not payload.success:
+#             raise Exception("Invalid Token")
+#         request.state.user = payload.token
+#     except Exception as e:
+#         logger.error(f"Token verification failed: {e}")
+#         return JSONResponse(
+#             status_code=status.HTTP_401_UNAUTHORIZED,
+#             content={"success": False, "error": "Invalid or expired token"},
+#         )
+#     return await call_next(request)
 
 
 @app.post("/alert/add")
@@ -335,15 +339,15 @@ async def ai_judge(data: AiJudgeInput) -> AiJudgeOut:
 
 
 @app.post("/ai_chat")
-async def ai_chat(report: AiReport, query: AiChatMsg) -> dict:
+async def ai_chat(report: AiReport, query: AiChatMsg) -> AiChatMsg:
 
     try:
-        response = ask_chatbot(report, query)
-        return AiChatMsg(response=response)
+        response = ask_chatbot(report, query.msg)
+        return AiChatMsg(msg=response)
     except Exception as e:
         logger.error(f"AI chat error: {e}")
         return AiChatMsg(
-            response="I'm sorry, I couldn't process your request at the moment."
+            msg="I'm sorry, I couldn't process your request at the moment."
         )
 
 
@@ -356,7 +360,7 @@ async def news_show():
 
 
 @app.post("/news/add")
-async def news_add(data: AiChatMsg):
+async def news_add(data: News):
     from controller.news import insert_news
 
     resp = insert_news(data, app.collection_news)
@@ -372,11 +376,17 @@ async def report_show():
 
 
 @app.post("/report/add")
-async def report_add(data: AiReport):
+async def report_add(data: Report):
     from controller.report import insert_report
 
     resp = insert_report(data, app.collection_report)
     return AuthResp(success=resp)
+
+
+@app.get("/get_answer")
+async def get_answer():
+    resp = int(input("what to response: "))
+    return {"response": resp}
 
 
 if __name__ == "__main__":
