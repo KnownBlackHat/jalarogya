@@ -14,12 +14,10 @@ from controller.alert import get_alert, insert_alert
 from controller.campagin import get_campaign, insert_campaign
 from controller.heatmap import get_heatmap, insert_heatmap
 from controller.JWTmanager import JWTmanager, JWTSettings
-from controller.learning_modules import (
-    get_learning_module_blogs,
-    get_learning_module_videos,
-    insert_learning_module_blogs,
-    insert_learning_module_videos,
-)
+from controller.learning_modules import (get_learning_module_blogs,
+                                         get_learning_module_videos,
+                                         insert_learning_module_blogs,
+                                         insert_learning_module_videos)
 from controller.location import fetch_location
 from controller.notification import get_notification, insert_notification
 from controller.priority import get_priority, insert_priority
@@ -49,6 +47,8 @@ class Mymongo(FastAPI):
     collection_campagin: Collection[Mapping[str, Any]]
     collection_learning_mod_blog: Collection[Mapping[str, Any]]
     collection_learning_mod_video: Collection[Mapping[str, Any]]
+    collection_news: Collection[Mapping[str, Any]]
+    collection_report: Collection[Mapping[str, Any]]
 
 
 logging.basicConfig(level=logging.INFO)
@@ -82,6 +82,8 @@ async def startup_client():
     app.collection_heatmap = app.mongodb_client["jalaarogya"]["heatmap"]
     app.collection_notification = app.mongodb_client["jalaarogya"]["notification"]
     app.collection_campagin = app.mongodb_client["jalaarogya"]["campagin"]
+    app.collection_news = app.mongodb_client["jalaarogya"]["campagin"]
+    app.collection_report = app.mongodb_client["jalaarogya"]["campagin"]
     app.collection_learning_mod_blog = app.mongodb_client["jalaarogya"][
         "learn_mod_blog"
     ]
@@ -349,7 +351,7 @@ async def ai_chat(report: AiReport, query: AiChatMsg) -> dict:
 async def news_show():
     from controller.news import get_news
 
-    resp = get_news(app.collection_notification)
+    resp = get_news(app.collection_news)
     return resp
 
 
@@ -357,7 +359,23 @@ async def news_show():
 async def news_add(data: AiChatMsg):
     from controller.news import insert_news
 
-    resp = insert_news(data, app.collection_notification)
+    resp = insert_news(data, app.collection_news)
+    return AuthResp(success=resp)
+
+
+@app.get("/report")
+async def report_show():
+    from controller.report import get_reports
+
+    resp = get_reports(app.collection_report)
+    return resp
+
+
+@app.post("/report/add")
+async def report_add(data: AiReport):
+    from controller.report import insert_report
+
+    resp = insert_report(data, app.collection_report)
     return AuthResp(success=resp)
 
 
