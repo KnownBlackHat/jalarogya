@@ -12,10 +12,13 @@ from controller.alert import get_alert, insert_alert
 from controller.campagin import get_campaign
 from controller.heatmap import get_heatmap, insert_heatmap
 from controller.JWTmanager import JWTmanager, JWTSettings
-from controller.learning_modules import (get_learning_module_blogs,
-                                         get_learning_module_videos,
-                                         insert_learning_module_blogs,
-                                         insert_learning_module_videos)
+from controller.learning_modules import (
+    get_learning_module_blogs,
+    get_learning_module_videos,
+    insert_learning_module_blogs,
+    insert_learning_module_videos,
+)
+from controller.location import fetch_location
 from controller.notification import get_notification, insert_notification
 from controller.priority import get_priority, insert_priority
 from models.achivement import Achivement
@@ -25,7 +28,7 @@ from models.heatmap import HeatMap
 from models.learning_modules import LearningModsBlogs, LearningModsVideos
 from models.notification import Notification
 from models.response import AuthResp
-from models.users import Login, Signup
+from models.users import AshaWorker, Bmo, Govt, Login, Signup, User
 
 
 class Mymongo(FastAPI):
@@ -156,7 +159,6 @@ async def verify(request: Request, call_next):
 
     try:
         payload = jwt_manager.verify(token)
-        print("payload: ", payload.error)
         if not payload.success:
             raise Exception("Invalid Token")
         request.state.user = payload.token
@@ -263,6 +265,50 @@ async def learnmodv_show():
 async def learnmodv_add(data: LearningModsVideos):
     resp = insert_learning_module_videos(data, app.collection_learning_mod_video)
     return resp
+
+
+@app.get("/location")
+async def get_location(request: Request):
+    if not request.client:
+        return AuthResp(success=False, error="client not found")
+    return fetch_location(request.client.host)
+
+
+@app.get("/user/{role}")
+async def get_user(role: Literal["asha", "resident", "bmo", "govt"]):
+    from controller.users import get_user
+
+    collection_map = {
+        "asha": app.collection_asha,
+        "resident": app.collection_resident,
+        "bmo": app.collection_bmo,
+        "govt": app.collection_govt,
+    }
+
+    if role not in collection_map:
+        return {"success": False, "error": "Invalid Role"}
+
+    users = get_user(role, collection_map[role])
+    return users
+
+
+@app.post("/user/{role}/update")
+async def update_user(
+    role: Literal["asha", "resident", "bmo", "govt"],
+    data: AshaWorker | User | Bmo | Govt,
+):
+    from controller.users import update_user
+
+    collection_map = {
+        "asha": app.collection_asha,
+        "resident": app.collection_resident,
+        "bmo": app.collection_bmo,
+        "govt": app.collection_govt,
+    }
+    if role not in collection_map:
+        return {"success": False, "error": "Invalid Role"}
+    resp = update_user(role, data.email, data, collection_map[role])
+    return AuthResp(success=resp)
 
 
 if __name__ == "__main__":

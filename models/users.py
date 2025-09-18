@@ -7,6 +7,10 @@ class User(BaseModel):
     name: str
     email: str
     password: str
+    gender: Optional[str] = Field(default=None)
+    phone_no: Optional[int] = Field(default=None)
+    address: Optional[str] = Field(default=None)
+    age: Optional[int] = Field(default=None)
 
 
 class AshaWorker(BaseModel):
@@ -14,6 +18,10 @@ class AshaWorker(BaseModel):
     name: str
     email: str
     password: str
+    gender: Optional[str] = Field(default=None)
+    phone_no: Optional[int] = Field(default=None)
+    address: Optional[str] = Field(default=None)
+    age: Optional[int] = Field(default=None)
 
 
 class Bmo(BaseModel):
@@ -21,12 +29,20 @@ class Bmo(BaseModel):
     name: str
     email: str
     password: str
+    gender: Optional[str] = Field(default=None)
+    phone_no: Optional[int] = Field(default=None)
+    address: Optional[str] = Field(default=None)
+    age: Optional[int] = Field(default=None)
 
 
 class Govt(BaseModel):
     name: str
     email: str
     password: str
+    gender: Optional[str] = Field(default=None)
+    phone_no: Optional[int] = Field(default=None)
+    address: Optional[str] = Field(default=None)
+    age: Optional[int] = Field(default=None)
 
 
 class Login(BaseModel):
