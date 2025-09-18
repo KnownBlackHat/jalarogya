@@ -12,4 +12,6 @@ def fetch_location(ip: str) -> Location:
         city=data.get("city", "Unknown"),
         state=data.get("region", "Unknown"),
         lang=data.get("languages", "Unknown"),
+        latitude=data.get("latitude", 0.0),
+        longitude=data.get("longitude", 0.0),
     )

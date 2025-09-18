@@ -6,3 +6,5 @@ class Location(BaseModel):
     city: str
     state: str
     lang: str
+    longitude: float
+    latitude: float
