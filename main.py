@@ -2,9 +2,8 @@ import logging
 import os
 from typing import Any, Literal
 
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from pymongo import MongoClient
 from pymongo.collection import Collection, Mapping
 
@@ -14,12 +13,10 @@ from controller.alert import get_alert, insert_alert
 from controller.campagin import get_campaign, insert_campaign
 from controller.heatmap import get_heatmap, insert_heatmap
 from controller.JWTmanager import JWTmanager, JWTSettings
-from controller.learning_modules import (
-    get_learning_module_blogs,
-    get_learning_module_videos,
-    insert_learning_module_blogs,
-    insert_learning_module_videos,
-)
+from controller.learning_modules import (get_learning_module_blogs,
+                                         get_learning_module_videos,
+                                         insert_learning_module_blogs,
+                                         insert_learning_module_videos)
 from controller.location import fetch_location
 from controller.notification import get_notification, insert_notification
 from controller.priority import get_priority, insert_priority
@@ -73,6 +70,13 @@ DB_URL = "mongodb+srv://test:test@cluster0.yvlq9mj.mongodb.net/?retryWrites=true
 jwt_manager = JWTmanager(JWTSettings())
 
 
+def debug_log(out, inp=None):
+    if inp:
+        logger.info(f"In: {inp}, Out: {out}")
+    else:
+        logger.info(f"Out: {out}")
+
+
 @app.on_event("startup")
 async def startup_client():
     app.mongodb_client = MongoClient(DB_URL)
@@ -118,7 +122,9 @@ async def login_endpoint(
         return {"success": False, "error": "Invalid Credentials"}
 
     payload = TokenPayload(name=user.name, role=role, email=user.email)
-    return jwt_manager.encode(payload)
+    resp = jwt_manager.encode(payload)
+    debug_log(inp=details, out=resp)
+    return resp
 
 
 @app.post("/register/{role}")
@@ -151,7 +157,9 @@ async def register_endpoint(
         return {"success": False, "error": "User Already Exists"}
 
     payload = TokenPayload(name=user.name, role=role, email=user.email)
-    return jwt_manager.encode(payload)
+    resp = jwt_manager.encode(payload)
+    debug_log(inp=details, out=resp)
+    return resp
 
 
 # @app.middleware("http")
@@ -187,96 +195,112 @@ async def register_endpoint(
 @app.post("/alert/add")
 async def alert(alert: Alert):
     resp = insert_alert(alert.message, app.collection_alert)
+    debug_log(inp=alert, out=AuthResp(success=resp))
     return AuthResp(success=resp)
 
 
 @app.get("/alert")
 async def alert_show():
     alerts = get_alert(app.collection_alert)
+    debug_log(alerts)
     return alerts
 
 
 @app.get("/achivement")
 async def achivement_show():
-    alerts = get_achivement(app.collection_achivement)
-    return alerts
+    achivements = get_achivement(app.collection_achivement)
+    debug_log(achivements)
+    return achivements
 
 
 @app.post("/achivement/add")
 async def achivement_add(achivement: Achivement):
     resp = insert_achivement(achivement, app.collection_achivement)
+    debug_log(inp=achivement, out=AuthResp(success=resp))
     return AuthResp(success=resp)
 
 
 @app.get("/priority_queue")
 async def priority_show():
     priority = get_priority(app.collection_queue)
+    debug_log(priority)
     return priority
 
 
 @app.post("/priority_queue/add")
 async def priority_add(city):
     resp = insert_priority(city, app.collection_queue)
+    debug_log(inp=city, out=AuthResp(success=resp))
     return AuthResp(success=resp)
 
 
 @app.get("/heatmap")
 async def heatmap_show():
     resp = get_heatmap(app.collection_queue)
+    debug_log(out=resp)
     return resp
 
 
 @app.post("/heatmap/add")
 async def heatmap_add(data: HeatMap):
     resp = insert_heatmap(data, app.collection_heatmap)
+    debug_log(inp=data, out=AuthResp(success=resp))
     return AuthResp(success=resp)
 
 
 @app.get("/notification")
 async def notification_show():
     resp = get_notification(app.collection_notification)
+    debug_log(out=resp)
     return resp
 
 
 @app.post("/notification/add")
 async def notification_add(data: Notification):
     resp = insert_notification(data, app.collection_notification)
+    debug_log(inp=data, out=AuthResp(success=resp))
     return AuthResp(success=resp)
 
 
 @app.get("/campagin")
 async def campagin_show():
     resp = get_campaign(app.collection_campagin)
+    debug_log(out=resp)
     return resp
 
 
 @app.post("/campagin/add")
 async def campagin_add(data: Campaign):
     resp = insert_campaign(data, app.collection_campagin)
+    debug_log(inp=data, out=AuthResp(success=resp))
     return AuthResp(success=resp)
 
 
 @app.get("/learn_mods/blog")
 async def learnmods_show():
     resp = get_learning_module_blogs(app.collection_learning_mod_blog)
+    debug_log(out=resp)
     return resp
 
 
 @app.get("/learn_mods/blog/add")
 async def learnmods_add(data: LearningModsBlogs):
     resp = insert_learning_module_blogs(data, app.collection_learning_mod_blog)
+    debug_log(inp=data, out=AuthResp(success=resp))
     return resp
 
 
 @app.get("/learn_mods/video")
 async def learnmodv_show():
     resp = get_learning_module_videos(app.collection_learning_mod_video)
+    debug_log(out=resp)
     return resp
 
 
 @app.get("/learn_mods/video/add")
 async def learnmodv_add(data: LearningModsVideos):
     resp = insert_learning_module_videos(data, app.collection_learning_mod_video)
+    debug_log(inp=data, out=AuthResp(success=resp))
     return resp
 
 
@@ -284,7 +308,9 @@ async def learnmodv_add(data: LearningModsVideos):
 async def get_location(request: Request):
     if not request.client:
         return AuthResp(success=False, error="client not found")
-    return fetch_location(request.client.host)
+    resp = fetch_location(request.client.host)
+    debug_log(inp=request.client.host, out=resp)
+    return resp
 
 
 @app.get("/user/{role}")
@@ -302,6 +328,7 @@ async def get_user(role: Literal["asha", "resident", "bmo", "govt"]):
         return {"success": False, "error": "Invalid Role"}
 
     users = get_user(role, collection_map[role])
+    debug_log(inp=role, out=users)
     return users
 
 
@@ -321,6 +348,7 @@ async def update_user(
     if role not in collection_map:
         return {"success": False, "error": "Invalid Role"}
     resp = update_user(role, data.email, data, collection_map[role])
+    debug_log(inp={"role": role, "data": data}, out=AuthResp(success=resp))
     return AuthResp(success=resp)
 
 
@@ -330,11 +358,13 @@ async def ai_judge(data: AiJudgeInput) -> AiJudgeOut:
 
     try:
         result = get_prediction(data)
+        debug_log(inp=data, out=result)
         return AiJudgeOut(
             severity=int(result.split("\n")[0].split(": ")[1]),
             diseases=result.split("\n")[1].split(": ")[1],
         )
     except Exception:
+        logger.error("AI judge error, falling back to default")
         return await ai_judge(data=data)
 
 
@@ -343,6 +373,7 @@ async def ai_chat(report: AiReport, query: AiChatMsg) -> AiChatMsg:
 
     try:
         response = ask_chatbot(report, query.msg)
+        debug_log(inp={"report": report, "query": query}, out=response)
         return AiChatMsg(msg=response)
     except Exception as e:
         logger.error(f"AI chat error: {e}")
@@ -356,6 +387,7 @@ async def news_show():
     from controller.news import get_news
 
     resp = get_news(app.collection_news)
+    debug_log(out=resp)
     return resp
 
 
@@ -364,6 +396,7 @@ async def news_add(data: News):
     from controller.news import insert_news
 
     resp = insert_news(data, app.collection_news)
+    debug_log(inp=data, out=AuthResp(success=resp))
     return AuthResp(success=resp)
 
 
@@ -372,6 +405,7 @@ async def report_show():
     from controller.report import get_reports
 
     resp = get_reports(app.collection_report)
+    debug_log(out=resp)
     return resp
 
 
@@ -380,6 +414,7 @@ async def report_add(data: Report):
     from controller.report import insert_report
 
     resp = insert_report(data, app.collection_report)
+    debug_log(inp=data, out=AuthResp(success=resp))
     return AuthResp(success=resp)
 
 
