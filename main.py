@@ -9,6 +9,7 @@ from pymongo import MongoClient
 from pymongo.collection import Collection, Mapping
 
 from controller.achivement import get_achivement, insert_achivement
+from controller.ai_chat import ask_chatbot
 from controller.alert import get_alert, insert_alert
 from controller.campagin import get_campaign, insert_campaign
 from controller.heatmap import get_heatmap, insert_heatmap
@@ -23,6 +24,7 @@ from controller.location import fetch_location
 from controller.notification import get_notification, insert_notification
 from controller.priority import get_priority, insert_priority
 from models.achivement import Achivement
+from models.ai_chat import AiChatMsg, AiReport
 from models.ai_judge import AiJudgeInput, AiJudgeOut
 from models.alert import Alert
 from models.campagin import Campaign
@@ -328,6 +330,19 @@ async def ai_judge(data: AiJudgeInput) -> AiJudgeOut:
         )
     except Exception:
         return await ai_judge(data=data)
+
+
+@app.post("/ai_chat")
+async def ai_chat(report: AiReport, query: AiChatMsg) -> dict:
+
+    try:
+        response = ask_chatbot(report, query)
+        return AiChatMsg(response=response)
+    except Exception as e:
+        logger.error(f"AI chat error: {e}")
+        return AiChatMsg(
+            response="I'm sorry, I couldn't process your request at the moment."
+        )
 
 
 if __name__ == "__main__":
