@@ -345,6 +345,22 @@ async def ai_chat(report: AiReport, query: AiChatMsg) -> dict:
         )
 
 
+@app.get("/news")
+async def news_show():
+    from controller.news import get_news
+
+    resp = get_news(app.collection_notification)
+    return resp
+
+
+@app.post("/news/add")
+async def news_add(data: AiChatMsg):
+    from controller.news import insert_news
+
+    resp = insert_news(data, app.collection_notification)
+    return AuthResp(success=resp)
+
+
 if __name__ == "__main__":
     import uvicorn
 
