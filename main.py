@@ -245,7 +245,7 @@ async def notification_add(data: Notification):
 
 
 @app.get("/campagin")
-async def campagin_show(data: Campaign):
+async def campagin_show():
     resp = get_campaign(app.collection_notification)
     return resp
 
