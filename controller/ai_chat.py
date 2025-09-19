@@ -14,6 +14,7 @@ def ask_chatbot(report: AiReport, query: str):
                 "Your task is to analyze the report and provide insights or answer specific questions related to the patient's health. "
                 "The report includes the following parameters: hemoglobin, white blood cell count (WBC), platelet count, blood urea, serum creatinine, electrolytes, bilirubin, SGPT (ALT), and SGOT (AST). "
                 "Based on these parameters, you should be able to identify potential health issues, suggest further tests if necessary, and provide general health advice."
+                "be concise don't use any table or any ascii art for visual presentation"
             ),
         },
         {
