@@ -13,10 +13,12 @@ from controller.alert import get_alert, insert_alert
 from controller.campagin import get_campaign, insert_campaign
 from controller.heatmap import get_heatmap, insert_heatmap
 from controller.JWTmanager import JWTmanager, JWTSettings
-from controller.learning_modules import (get_learning_module_blogs,
-                                         get_learning_module_videos,
-                                         insert_learning_module_blogs,
-                                         insert_learning_module_videos)
+from controller.learning_modules import (
+    get_learning_module_blogs,
+    get_learning_module_videos,
+    insert_learning_module_blogs,
+    insert_learning_module_videos,
+)
 from controller.location import fetch_location
 from controller.notification import get_notification, insert_notification
 from controller.priority import get_priority, insert_priority
@@ -52,7 +54,9 @@ class Mymongo(FastAPI):
     collection_report: Collection[Mapping[str, Any]]
 
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.WARNING if os.environ.get("PROD", False) else logging.INFO
+)
 logger = logging.getLogger(__name__)
 
 
@@ -420,8 +424,8 @@ async def report_add(data: Report):
 
 @app.get("/get_answer")
 async def get_answer():
-    resp = int(input("what to response: "))
-    return {"response": resp}
+    resp = input("what to response: ")
+    return {"response": int(resp)}
 
 
 if __name__ == "__main__":
